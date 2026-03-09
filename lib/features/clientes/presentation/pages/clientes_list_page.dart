@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/routes.dart';
-import '../../../../shared/widgets/app_logo.dart';
 import '../providers/clientes_provider.dart';
 
 class ClientesListPage extends ConsumerStatefulWidget {
@@ -22,7 +21,7 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const AppLogo(showText: true, text: 'Clientes'),
+        title: const Text('Clientes'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -116,7 +115,7 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, __) => Center(
+              error: (error, _) => Center(
                 child: Text('Erro: $error'),
               ),
             ),

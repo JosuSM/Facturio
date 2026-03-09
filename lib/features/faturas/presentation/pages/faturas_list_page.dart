@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
 import '../../../../core/services/pdf_service.dart';
-import '../../../../shared/widgets/app_logo.dart';
 import '../../../clientes/presentation/providers/clientes_provider.dart';
 import '../providers/faturas_provider.dart';
 
@@ -24,7 +23,7 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const AppLogo(showText: true, text: 'Faturas'),
+        title: const Text('Faturas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -132,7 +131,7 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, __) => Center(child: Text('Erro: $error')),
+        error: (error, _) => Center(child: Text('Erro: $error')),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

@@ -102,7 +102,7 @@ final produtoSearchProvider = Provider.family<List<Produto>, String>((ref, query
       }).toList();
     },
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 });
 
@@ -113,6 +113,6 @@ final produtosStockBaixoProvider = Provider<List<Produto>>((ref) {
   return produtosAsync.when(
     data: (produtos) => produtos.where((p) => p.stock < 10).toList(),
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 });

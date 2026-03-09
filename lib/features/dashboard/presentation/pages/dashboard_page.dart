@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
-import '../../../../shared/widgets/app_logo.dart';
 import '../../../clientes/presentation/providers/clientes_provider.dart';
 import '../../../produtos/presentation/providers/produtos_provider.dart';
 import '../../../faturas/presentation/providers/faturas_provider.dart';
@@ -23,7 +22,7 @@ class DashboardPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const AppLogo(showText: true, text: 'Dashboard'),
+        title: const Text('Dashboard'),
       ),
       drawer: _buildDrawer(context),
       body: SingleChildScrollView(
@@ -41,7 +40,7 @@ class DashboardPage extends ConsumerWidget {
                     clientesAsync.when(
                       data: (clientes) => clientes.length.toString(),
                       loading: () => '...',
-                      error: (_, __) => '0',
+                      error: (_, _) => '0',
                     ),
                     Icons.people,
                     Colors.blue,
@@ -56,7 +55,7 @@ class DashboardPage extends ConsumerWidget {
                     produtosAsync.when(
                       data: (produtos) => produtos.length.toString(),
                       loading: () => '...',
-                      error: (_, __) => '0',
+                      error: (_, _) => '0',
                     ),
                     Icons.inventory,
                     Colors.green,
@@ -75,7 +74,7 @@ class DashboardPage extends ConsumerWidget {
                     faturasAsync.when(
                       data: (faturas) => faturas.length.toString(),
                       loading: () => '...',
-                      error: (_, __) => '0',
+                      error: (_, _) => '0',
                     ),
                     Icons.receipt_long,
                     Colors.orange,
@@ -150,7 +149,7 @@ class DashboardPage extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Card(
+              error: (_, _) => const Card(
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: Text('Erro ao carregar faturas'),

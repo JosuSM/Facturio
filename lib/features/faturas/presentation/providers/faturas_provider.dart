@@ -104,7 +104,7 @@ final faturacaoPorPeriodoProvider = Provider.family<double, DateTime>((ref, data
       return faturasDoMes.fold(0.0, (sum, f) => sum + f.total);
     },
     loading: () => 0.0,
-    error: (_, __) => 0.0,
+    error: (_, _) => 0.0,
   );
 });
 
@@ -115,7 +115,7 @@ final faturasporEstadoProvider = Provider.family<int, String>((ref, estado) {
   return faturasAsync.when(
     data: (faturas) => faturas.where((f) => f.estado == estado).length,
     loading: () => 0,
-    error: (_, __) => 0,
+    error: (_, _) => 0,
   );
 });
 
@@ -129,6 +129,6 @@ final totalFaturadoProvider = Provider<double>((ref) {
       return faturasValidas.fold(0.0, (sum, f) => sum + f.total);
     },
     loading: () => 0.0,
-    error: (_, __) => 0.0,
+    error: (_, _) => 0.0,
   );
 });

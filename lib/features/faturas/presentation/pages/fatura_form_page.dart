@@ -41,7 +41,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
             clientesAsync.when(
               data: (clientes) {
                 return DropdownButtonFormField<String>(
-                  value: _clienteSelecionadoId,
+                  initialValue: _clienteSelecionadoId,
                   decoration: const InputDecoration(
                     labelText: 'Cliente *',
                     prefixIcon: Icon(Icons.person),
@@ -63,13 +63,13 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                 );
               },
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('Erro ao carregar clientes'),
+              error: (_, _) => const Text('Erro ao carregar clientes'),
             ),
             const SizedBox(height: 16),
 
             // Estado da Fatura
             DropdownButtonFormField<String>(
-              value: _estadoSelecionado,
+              initialValue: _estadoSelecionado,
               decoration: const InputDecoration(
                 labelText: 'Estado',
                 prefixIcon: Icon(Icons.info),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
-import '../../../../shared/widgets/app_logo.dart';
 import '../providers/produtos_provider.dart';
 
 class ProdutosListPage extends ConsumerStatefulWidget {
@@ -24,7 +23,7 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const AppLogo(showText: true, text: 'Produtos'),
+        title: const Text('Produtos'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -125,7 +124,7 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, __) => Center(child: Text('Erro: $error')),
+              error: (error, _) => Center(child: Text('Erro: $error')),
             ),
           ),
         ],

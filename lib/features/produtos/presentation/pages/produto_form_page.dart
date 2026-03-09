@@ -122,7 +122,7 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<double>(
-                      value: _ivaSelec,
+                      initialValue: _ivaSelec,
                       decoration: const InputDecoration(
                         labelText: 'Taxa IVA',
                         prefixIcon: Icon(Icons.percent),
@@ -141,7 +141,7 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _unidadeSelecionada,
+                      initialValue: _unidadeSelecionada,
                       decoration: const InputDecoration(
                         labelText: 'Unidade',
                         prefixIcon: Icon(Icons.straighten),

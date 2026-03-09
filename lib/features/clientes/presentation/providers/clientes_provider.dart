@@ -92,6 +92,6 @@ final clienteSearchProvider = Provider.family<List<Cliente>, String>((ref, query
       }).toList();
     },
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 });
