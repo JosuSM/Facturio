@@ -14,6 +14,11 @@ Sistema completo de faturação empresarial desenvolvido em Flutter com arquitet
 - **Pesquisa** - Pesquisa inteligente em clientes e produtos
 - **Validação** - Formulários com validação completa
 - **Tema** - Design Material 3 com suporte para modo escuro
+- **Backup/Restore** - Exportar e restaurar todos os dados em JSON
+- **Configurações da Empresa** - Base de dados editável sem alterar código (IVA, unidades, estados de fatura)
+- **Autenticação por PIN** - Acesso protegido às configurações da empresa (admin)
+- **Exportação Multi-plataforma** - Geração automática de pacotes (APK, AAB, Web, Linux)
+- **Integração VS Code** - Task para exportar pacotes com um clique
 
 ## 📁 Arquitetura
 
@@ -51,6 +56,9 @@ lib/
 - **printing** 5.14.2 - Preview e impressão
 - **intl** - Formatação de datas e moeda
 - **uuid** - Geração de IDs únicos
+- **crypto** 3.0.6 - Hashing de PIN (SHA-256)
+- **file_picker** 8.1.2 - Seleção de ficheiros de backup
+- **share_plus** 10.0.2 - Partilha e exportação de ficheiros
 
 ## 📦 Instalação
 
@@ -103,6 +111,20 @@ flutter run -d chrome
 - Geração e partilha de PDF
 - Numeração automática (Ano/Número)
 
+### Backup e Restore
+- **Criar Backup**: Exportar todos os dados (clientes, produtos, faturas, configurações) em ficheiro JSON
+- **Restaurar**: Importar e restaurar dados de um ficheiro de backup anterior
+- Acessível a partir do menu do Dashboard
+- Ficheiros guardados com timestamp (backup_YYYY-MM-DD_HH-MM-SS.json)
+
+### Configurações da Empresa
+- **Acesso Protegido**: Requer PIN do administrador (padrão: 1234)
+- **Taxas de IVA**: Adicionar/remover taxas personalizadas
+- **Unidades de Medida**: Personalizar unidades (un, kg, m, l, etc)
+- **Estados de Fatura**: Adicionar/remover estados customizados
+- **Alterar PIN**: Mudar o PIN de acesso às configurações
+- Todos os dados guardados em base de dados Hive (persistência local)
+
 ## 📱 Compatibilidade
 
 - ✅ **Android** (API 21+)
@@ -110,20 +132,41 @@ flutter run -d chrome
 - ✅ **Desktop** (Windows, macOS, Linux)
 - ✅ **Web** (Chrome, Firefox, Safari, Edge)
 
+## 📦 Exportação de Pacotes
+
+### Método 1: Script Bash
+```bash
+./export_packages.sh
+```
+
+O script gera automaticamente:
+- **Android**: APK e AAB (release)
+- **Web**: Build web completo
+- **Linux**: Binary e assets
+- **iOS/macOS/Windows**: Ficheiros de configuração
+
+Resultado: `dist/YYYYMMDD_HHMMSS/`
+
+### Método 2: VS Code Task
+```
+Terminal → Run Task → Facturio: Exportar pacotes
+```
+
+Mesmos resultados que o script, executável directo do editor.
+
 ## 🔧 Próximos Passos
 
 ### Fase 2 - Melhorias
 - [ ] Filtros avançados (por data, estado, valor)
 - [ ] Gráficos de vendas
 - [ ] Exportação de dados (CSV, Excel)
-- [ ] Backup/Restore
-- [ ] Configurações da empresa
 - [ ] Impressão direta
+- [ ] Customização do layout de PDF
 
 ### Fase 3 - Avançado
 - [ ] Multi-empresa
 - [ ] Sincronização cloud
-- [ ] Autenticação de utilizadores
+- [ ] Autenticação de utilizadores (multi-user)
 - [ ] Relatórios avançados
 - [ ] Envio de faturas por email
 
@@ -131,11 +174,19 @@ flutter run -d chrome
 
 1. **Persistência Local**: Os dados são guardados localmente no dispositivo usando Hive.
 
-2. **Sem Autenticação**: Esta versão não tem sistema de login.
+2. **Segurança do PIN**: O PIN é armazenado com hash SHA-256. PIN padrão: 1234
 
-3. **PDF Customização**: Edite `pdf_service.dart` para personalizar o layout.
+3. **Backup Automático**: Considere fazer backups regulares através do Dashboard.
 
-4. **Taxas de IVA**: Configuradas para Portugal (23%, 13%, 6%, 0%).
+4. **PDF Customização**: Edite `pdf_service.dart` para personalizar o layout.
+
+5. **Taxas de IVA**: Configuradas por defeito para Portugal (23%, 13%, 6%, 0%), mas podem ser customizadas na aplicação.
+
+6. **Exportação Multi-plataforma**: Requer:
+   - Android SDK (para APK/AAB)
+   - Flutter SDK
+   - Node.js (opcional, para web)
+   - Linux build tools (para Linux executable)
 
 ---
 

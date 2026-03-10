@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Cores principais
-  static const Color primaryColor = Color(0xFF2196F3);
-  static const Color secondaryColor = Color(0xFF03A9F4);
-  static const Color accentColor = Color(0xFFFF9800);
+  // Paleta inspirada no Facturio web
+  static const Color primaryColor = Color(0xFF0F766E);
+  static const Color secondaryColor = Color(0xFF14B8A6);
+  static const Color accentColor = Color(0xFFF59E0B);
   static const Color errorColor = Color(0xFFD32F2F);
   static const Color successColor = Color(0xFF388E3C);
 
@@ -19,11 +19,13 @@ class AppTheme {
     appBarTheme: const AppBarTheme(
       centerTitle: true,
       elevation: 0,
+      scrolledUnderElevation: 0,
     ),
     cardTheme: CardThemeData(
-      elevation: 2,
+      elevation: 1,
+      shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -31,6 +33,7 @@ class AppTheme {
         borderRadius: BorderRadius.circular(8),
       ),
       filled: true,
+      fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -59,11 +62,12 @@ class AppTheme {
     appBarTheme: const AppBarTheme(
       centerTitle: true,
       elevation: 0,
+      scrolledUnderElevation: 0,
     ),
     cardTheme: CardThemeData(
-      elevation: 2,
+      elevation: 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(

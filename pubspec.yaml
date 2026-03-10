@@ -47,14 +47,27 @@ dependencies:
   # PDF Generation
   pdf: ^3.11.1
   printing: ^5.13.1
+  barcode: ^2.2.8
+  
+  # QR Code Generation
+  qr_flutter: ^4.1.0
+  qr: ^3.0.1
+  
+  # Security & Hashing
+  crypto: ^3.0.6
   
   # Forms & Validation
   flutter_form_builder: ^9.3.0
+  
+  # Color Picker
+  flutter_colorpicker: ^1.1.0
   
   # Utilities
   uuid: ^4.4.2
   intl: any
   flutter_svg: ^2.0.10+1
+  share_plus: ^10.0.2
+  file_picker: ^8.1.2
   
 dev_dependencies:
   flutter_test:
@@ -79,6 +92,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/icons/
 
   # Custom fonts
   fonts:

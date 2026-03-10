@@ -2,12 +2,17 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../features/clientes/data/models/cliente_model.dart';
 import '../../features/produtos/data/models/produto_model.dart';
 import '../../features/faturas/data/models/fatura_model.dart';
+import '../../features/pagamentos/data/models/pagamento_model.dart';
+import '../../shared/models/pagamento.dart';
 import '../constants/app_constants.dart';
+import '../models/configuracao_empresa.dart';
 
 class StorageService {
   static late Box<ClienteModel> _clientesBox;
   static late Box<ProdutoModel> _produtosBox;
   static late Box<FaturaModel> _faturasBox;
+  static late Box<PagamentoModel> _pagamentosBox;
+  static late Box<dynamic> _configBox;
 
   // Inicializar Hive
   static Future<void> init() async {
@@ -17,11 +22,18 @@ class StorageService {
     Hive.registerAdapter(ClienteModelAdapter());
     Hive.registerAdapter(ProdutoModelAdapter());
     Hive.registerAdapter(FaturaModelAdapter());
+    Hive.registerAdapter(PagamentoModelAdapter());
 
     // Abrir Boxes
     _clientesBox = await Hive.openBox<ClienteModel>(AppConstants.clientesBox);
     _produtosBox = await Hive.openBox<ProdutoModel>(AppConstants.produtosBox);
     _faturasBox = await Hive.openBox<FaturaModel>(AppConstants.faturasBox);
+    _pagamentosBox = await Hive.openBox<PagamentoModel>('pagamentos');
+    _configBox = await Hive.openBox<dynamic>(AppConstants.configBox);
+
+    if (!_configBox.containsKey('empresa_config')) {
+      await _configBox.put('empresa_config', ConfiguracaoEmpresa.padrao().toJson());
+    }
   }
 
   // ===== CLIENTES =====
@@ -99,10 +111,56 @@ class StorageService {
     return '$ano/$proximoNumero';
   }
 
+  // ===== PAGAMENTOS =====
+  Future<List<Pagamento>> getPagamentos() async {
+    final models = _pagamentosBox.values.toList();
+    return models.map((m) => m.toEntity()).toList();
+  }
+
+  Future<List<Pagamento>> getPagamentosPorFatura(String faturaId) async {
+    final todosPagamentos = await getPagamentos();
+    return todosPagamentos.where((p) => p.faturaId == faturaId).toList();
+  }
+
+  Future<Pagamento?> getPagamento(String id) async {
+    final model = _pagamentosBox.get(id);
+    return model?.toEntity();
+  }
+
+  Future<void> savePagamento(Pagamento pagamento) async {
+    final model = PagamentoModel.fromEntity(pagamento);
+    await _pagamentosBox.put(pagamento.id, model);
+  }
+
+  Future<void> updatePagamento(Pagamento pagamento) async {
+    final model = PagamentoModel.fromEntity(pagamento);
+    await _pagamentosBox.put(pagamento.id, model);
+  }
+
+  Future<void> deletePagamento(String id) async {
+    await _pagamentosBox.delete(id);
+  }
+
   // Limpar todos os dados
   Future<void> clearAll() async {
     await _clientesBox.clear();
     await _produtosBox.clear();
     await _faturasBox.clear();
+    await _pagamentosBox.clear();
+  }
+
+  Future<ConfiguracaoEmpresa> getConfiguracaoEmpresa() async {
+    final data = _configBox.get('empresa_config');
+    if (data is Map) {
+      return ConfiguracaoEmpresa.fromJson(Map<String, dynamic>.from(data));
+    }
+
+    final padrao = ConfiguracaoEmpresa.padrao();
+    await _configBox.put('empresa_config', padrao.toJson());
+    return padrao;
+  }
+
+  Future<void> saveConfiguracaoEmpresa(ConfiguracaoEmpresa config) async {
+    await _configBox.put('empresa_config', config.toJson());
   }
 }

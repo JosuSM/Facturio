@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/ui_helpers.dart';
 import '../../domain/entities/cliente.dart';
 import '../providers/clientes_provider.dart';
 
@@ -65,6 +66,8 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditMode ? 'Editar Cliente' : 'Novo Cliente'),
@@ -78,79 +81,119 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextFormField(
-                      controller: _nomeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nome *',
-                        prefixIcon: Icon(Icons.person),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [colors.primary, colors.secondary],
+                        ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o nome';
-                        }
-                        return null;
-                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isEditMode ? 'Atualizar Cliente' : 'Novo Cliente',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  color: colors.onPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Preencha os dados para manter o cadastro organizado.',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: colors.onPrimary.withValues(alpha: 0.9),
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _nifController,
-                      decoration: const InputDecoration(
-                        labelText: 'NIF *',
-                        prefixIcon: Icon(Icons.badge),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            TextFormField(
+                              controller: _nomeController,
+                              decoration: const InputDecoration(
+                                labelText: 'Nome *',
+                                prefixIcon: Icon(Icons.person),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira o nome';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _nifController,
+                              decoration: const InputDecoration(
+                                labelText: 'NIF *',
+                                prefixIcon: Icon(Icons.badge),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira o NIF';
+                                }
+                                if (value.length != 9) {
+                                  return 'NIF deve ter 9 dígitos';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _emailController,
+                              decoration: const InputDecoration(
+                                labelText: 'Email',
+                                prefixIcon: Icon(Icons.email),
+                              ),
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value != null && value.isNotEmpty && !value.contains('@')) {
+                                  return 'Email inválido';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _telefoneController,
+                              decoration: const InputDecoration(
+                                labelText: 'Telefone',
+                                prefixIcon: Icon(Icons.phone),
+                              ),
+                              keyboardType: TextInputType.phone,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _moradaController,
+                              decoration: const InputDecoration(
+                                labelText: 'Morada',
+                                prefixIcon: Icon(Icons.location_on),
+                              ),
+                              maxLines: 3,
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: _salvar,
+                              icon: const Icon(Icons.save),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              label: Text(_isEditMode ? 'Atualizar' : 'Criar Cliente'),
+                            ),
+                          ],
+                        ),
                       ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o NIF';
-                        }
-                        if (value.length != 9) {
-                          return 'NIF deve ter 9 dígitos';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          if (!value.contains('@')) {
-                            return 'Email inválido';
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _telefoneController,
-                      decoration: const InputDecoration(
-                        labelText: 'Telefone',
-                        prefixIcon: Icon(Icons.phone),
-                      ),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _moradaController,
-                      decoration: const InputDecoration(
-                        labelText: 'Morada',
-                        prefixIcon: Icon(Icons.location_on),
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _salvar,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text(_isEditMode ? 'Atualizar' : 'Criar Cliente'),
                     ),
                   ],
                 ),
@@ -190,17 +233,19 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isEditMode ? 'Cliente atualizado' : 'Cliente criado'),
-          ),
+        UiHelpers.mostrarSnackBar(
+          context,
+          mensagem: _isEditMode ? 'Cliente atualizado com sucesso' : 'Cliente criado com sucesso',
+          tipo: TipoSnackBar.sucesso,
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+        UiHelpers.mostrarSnackBar(
+          context,
+          mensagem: 'Erro ao salvar cliente: $e',
+          tipo: TipoSnackBar.erro,
         );
       }
     } finally {

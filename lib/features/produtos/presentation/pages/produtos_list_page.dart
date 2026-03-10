@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
+import '../../../../core/utils/ui_helpers.dart';
 import '../providers/produtos_provider.dart';
 
 class ProdutosListPage extends ConsumerStatefulWidget {
@@ -17,6 +18,7 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final produtosAsync = ref.watch(produtosProvider);
     final produtosFiltrados = ref.watch(produtoSearchProvider(_searchQuery));
     final formatoMoeda = NumberFormat.currency(locale: 'pt_PT', symbol: '€');
@@ -36,22 +38,52 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Pesquisar produtos...',
-                prefixIcon: Icon(Icons.search),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colors.primaryContainer.withValues(alpha: 0.8),
+                    colors.surface,
+                  ],
+                ),
+                border: Border.all(color: colors.outlineVariant),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Pesquisar produtos...',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Chip(
+                    avatar: const Icon(Icons.inventory_2, size: 18),
+                    label: produtosAsync.when(
+                      data: (produtos) => Text('${produtosFiltrados.length}/${produtos.length}'),
+                      loading: () => const Text('...'),
+                      error: (_, _) => const Text('0/0'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
             child: produtosAsync.when(
-              data: (_) {
+              data: (produtos) {
                 if (produtosFiltrados.isEmpty) {
                   return const Center(
                     child: Text('Nenhum produto encontrado'),
@@ -65,13 +97,15 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
                     final stockBaixo = produto.stock < 10;
                     
                     return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      clipBehavior: Clip.antiAlias,
                       child: ListTile(
                         leading: CircleAvatar(
-                          child: Text(produto.nome[0].toUpperCase()),
+                          backgroundColor: colors.primaryContainer,
+                          child: Text(
+                            produto.nome[0].toUpperCase(),
+                            style: TextStyle(color: colors.onPrimaryContainer),
+                          ),
                         ),
                         title: Text(produto.nome),
                         subtitle: Text(
@@ -81,7 +115,15 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (stockBaixo)
-                              const Icon(Icons.warning, color: Colors.orange),
+                              Container(
+                                margin: const EdgeInsets.only(right: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: const Icon(Icons.warning, color: Colors.orange, size: 16),
+                              ),
                             PopupMenuButton(
                               itemBuilder: (context) => [
                                 const PopupMenuItem(
@@ -138,39 +180,34 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
     );
   }
 
-  void _confirmarEliminar(BuildContext context, String id, String nome) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar Eliminação'),
-        content: Text('Tem certeza que deseja eliminar o produto "$nome"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await ref.read(produtosProvider.notifier).deleteProduto(id);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Produto eliminado')),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro: $e')),
-                  );
-                }
-              }
-            },
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+  Future<void> _confirmarEliminar(BuildContext context, String id, String nome) async {
+    final confirmado = await UiHelpers.mostrarDialogoConfirmacao(
+      context,
+      titulo: 'Confirmar Eliminação',
+      mensagem: 'Tem a certeza de que deseja eliminar o produto "$nome"?',
+      textoBotaoConfirmar: 'Eliminar',
+      acaoDestruidora: true,
     );
+
+    if (confirmado && context.mounted) {
+      try {
+        await ref.read(produtosProvider.notifier).deleteProduto(id);
+        if (context.mounted) {
+          UiHelpers.mostrarSnackBar(
+            context,
+            mensagem: 'Produto eliminado com sucesso',
+            tipo: TipoSnackBar.sucesso,
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          UiHelpers.mostrarSnackBar(
+            context,
+            mensagem: 'Erro ao eliminar: $e',
+            tipo: TipoSnackBar.erro,
+          );
+        }
+      }
+    }
   }
 }

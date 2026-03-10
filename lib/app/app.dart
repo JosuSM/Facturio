@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'theme.dart';
+import '../core/providers/theme_provider.dart';
 import 'routes.dart';
 
 class FaturacaoApp extends ConsumerWidget {
@@ -8,11 +8,13 @@ class FaturacaoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeNotifier = ref.watch(themeProvider);
+
     return MaterialApp.router(
       title: 'Facturio',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      theme: themeNotifier.getLightTheme(),
+      darkTheme: themeNotifier.getDarkTheme(),
+      themeMode: themeNotifier.themeMode,
       routerConfig: AppRoutes.router,
       debugShowCheckedModeBanner: false,
     );

@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../features/splash/presentation/pages/splash_page.dart';
 import '../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../features/clientes/presentation/pages/clientes_list_page.dart';
 import '../features/clientes/presentation/pages/cliente_form_page.dart';
@@ -6,19 +7,36 @@ import '../features/produtos/presentation/pages/produtos_list_page.dart';
 import '../features/produtos/presentation/pages/produto_form_page.dart';
 import '../features/faturas/presentation/pages/faturas_list_page.dart';
 import '../features/faturas/presentation/pages/fatura_form_page.dart';
+import '../features/faturas/presentation/pages/fatura_detail_page.dart';
+import '../features/configuracoes/presentation/pages/configuracoes_page.dart';
+import '../features/tutorial/presentation/pages/tutorial_page.dart';
+import '../features/personalizacao/presentation/pages/personalizacao_page.dart';
 
 class AppRoutes {
-  static const String dashboard = '/';
+  static const String splash = '/';
+  static const String tutorial = '/tutorial';
+  static const String dashboard = '/dashboard';
   static const String clientes = '/clientes';
   static const String clienteForm = '/clientes/form';
   static const String produtos = '/produtos';
   static const String produtoForm = '/produtos/form';
   static const String faturas = '/faturas';
   static const String faturaForm = '/faturas/form';
+  static const String faturaDetail = '/faturas/detail';
+  static const String configuracoes = '/configuracoes';
+  static const String personalizacao = '/personalizacao';
 
   static final GoRouter router = GoRouter(
-    initialLocation: dashboard,
+    initialLocation: splash,
     routes: [
+      GoRoute(
+        path: splash,
+        builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
+        path: tutorial,
+        builder: (context, state) => const TutorialPage(),
+      ),
       GoRoute(
         path: dashboard,
         builder: (context, state) => const DashboardPage(),
@@ -55,6 +73,24 @@ class AppRoutes {
           final faturaId = state.uri.queryParameters['id'];
           return FaturaFormPage(faturaId: faturaId);
         },
+      ),
+      GoRoute(
+        path: faturaDetail,
+        builder: (context, state) {
+          final faturaId = state.uri.queryParameters['id'];
+          if (faturaId == null) {
+            throw Exception('ID da fatura é obrigatório');
+          }
+          return FaturaDetailPage(faturaId: faturaId);
+        },
+      ),
+      GoRoute(
+        path: configuracoes,
+        builder: (context, state) => const ConfiguracoesPage(),
+      ),
+      GoRoute(
+        path: personalizacao,
+        builder: (context, state) => const PersonalizacaoPage(),
       ),
     ],
   );

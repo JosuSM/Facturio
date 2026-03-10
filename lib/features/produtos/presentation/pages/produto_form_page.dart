@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/ui_helpers.dart';
+import '../../../configuracoes/presentation/providers/configuracoes_provider.dart';
 import '../../domain/entities/produto.dart';
 import '../providers/produtos_provider.dart';
 
@@ -67,6 +69,17 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final config = ref.watch(configuracoesProvider).maybeWhen(
+          data: (cfg) => cfg,
+          orElse: () => null,
+        );
+    final ivaBase = config?.ivaOptions.isNotEmpty == true ? config!.ivaOptions : AppConstants.ivaOptions;
+    final unidadesBase =
+        config?.unidades.isNotEmpty == true ? config!.unidades : AppConstants.unidades;
+    final ivaDropdownOptions = {...ivaBase, _ivaSelec}.toList()..sort();
+    final unidadeDropdownOptions = {...unidadesBase, _unidadeSelecionada}.toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditMode ? 'Editar Produto' : 'Novo Produto'),
@@ -80,109 +93,151 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextFormField(
-                      controller: _nomeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nome *',
-                        prefixIcon: Icon(Icons.inventory),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [colors.primary, colors.secondary],
+                        ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o nome';
-                        }
-                        return null;
-                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isEditMode ? 'Atualizar Produto' : 'Novo Produto',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  color: colors.onPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Defina preço, IVA e stock para manter a faturação correta.',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: colors.onPrimary.withValues(alpha: 0.9),
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _descricaoController,
-                      decoration: const InputDecoration(
-                        labelText: 'Descrição',
-                        prefixIcon: Icon(Icons.description),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            TextFormField(
+                              controller: _nomeController,
+                              decoration: const InputDecoration(
+                                labelText: 'Nome *',
+                                prefixIcon: Icon(Icons.inventory),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira o nome';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _descricaoController,
+                              decoration: const InputDecoration(
+                                labelText: 'Descrição',
+                                prefixIcon: Icon(Icons.description),
+                              ),
+                              maxLines: 3,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _precoController,
+                              decoration: const InputDecoration(
+                                labelText: 'Preço (€) *',
+                                prefixIcon: Icon(Icons.euro),
+                              ),
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira o preço';
+                                }
+                                if (double.tryParse(value) == null) {
+                                  return 'Preço inválido';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<double>(
+                              initialValue: _ivaSelec,
+                              decoration: const InputDecoration(
+                                labelText: 'Taxa IVA',
+                                prefixIcon: Icon(Icons.percent),
+                              ),
+                              items: ivaDropdownOptions.map((iva) {
+                                return DropdownMenuItem(
+                                  value: iva,
+                                  child: Text('${iva.toStringAsFixed(0)}%'),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _ivaSelec = value!;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<String>(
+                              initialValue: _unidadeSelecionada,
+                              decoration: const InputDecoration(
+                                labelText: 'Unidade',
+                                prefixIcon: Icon(Icons.straighten),
+                              ),
+                              items: unidadeDropdownOptions.map((unidade) {
+                                return DropdownMenuItem(
+                                  value: unidade,
+                                  child: Text(unidade),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _unidadeSelecionada = value!;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _stockController,
+                              decoration: const InputDecoration(
+                                labelText: 'Stock *',
+                                prefixIcon: Icon(Icons.inventory_2),
+                              ),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira o stock';
+                                }
+                                if (int.tryParse(value) == null) {
+                                  return 'Stock inválido';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: _salvar,
+                              icon: const Icon(Icons.save),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              label: Text(_isEditMode ? 'Atualizar' : 'Criar Produto'),
+                            ),
+                          ],
+                        ),
                       ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _precoController,
-                      decoration: const InputDecoration(
-                        labelText: 'Preço (€) *',
-                        prefixIcon: Icon(Icons.euro),
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o preço';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Preço inválido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<double>(
-                      initialValue: _ivaSelec,
-                      decoration: const InputDecoration(
-                        labelText: 'Taxa IVA',
-                        prefixIcon: Icon(Icons.percent),
-                      ),
-                      items: AppConstants.ivaOptions.map((iva) {
-                        return DropdownMenuItem(
-                          value: iva,
-                          child: Text('${iva.toStringAsFixed(0)}%'),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _ivaSelec = value!;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: _unidadeSelecionada,
-                      decoration: const InputDecoration(
-                        labelText: 'Unidade',
-                        prefixIcon: Icon(Icons.straighten),
-                      ),
-                      items: AppConstants.unidades.map((unidade) {
-                        return DropdownMenuItem(
-                          value: unidade,
-                          child: Text(unidade),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _unidadeSelecionada = value!;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _stockController,
-                      decoration: const InputDecoration(
-                        labelText: 'Stock *',
-                        prefixIcon: Icon(Icons.inventory_2),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o stock';
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'Stock inválido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _salvar,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: Text(_isEditMode ? 'Atualizar' : 'Criar Produto'),
                     ),
                   ],
                 ),
@@ -223,17 +278,19 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isEditMode ? 'Produto atualizado' : 'Produto criado'),
-          ),
+        UiHelpers.mostrarSnackBar(
+          context,
+          mensagem: _isEditMode ? 'Produto atualizado com sucesso' : 'Produto criado com sucesso',
+          tipo: TipoSnackBar.sucesso,
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+        UiHelpers.mostrarSnackBar(
+          context,
+          mensagem: 'Erro ao salvar produto: $e',
+          tipo: TipoSnackBar.erro,
         );
       }
     } finally {

@@ -1,21 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/services/contador_documentos_service.dart';
+import '../../../../core/services/fatura_legal_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../data/models/fatura_model.dart';
 import '../../domain/entities/fatura.dart';
 import '../../../clientes/presentation/providers/clientes_provider.dart';
+import '../../../configuracoes/presentation/providers/configuracoes_provider.dart';
 import 'package:uuid/uuid.dart';
 
 // Provider da lista de faturas
 final faturasProvider =
     StateNotifierProvider<FaturasNotifier, AsyncValue<List<Fatura>>>((ref) {
-  return FaturasNotifier(ref.watch(storageServiceProvider));
+  return FaturasNotifier(
+    ref.watch(storageServiceProvider),
+    ref,
+  );
 });
 
 class FaturasNotifier extends StateNotifier<AsyncValue<List<Fatura>>> {
   final StorageService _storage;
+  final Ref _ref;
   final _uuid = const Uuid();
 
-  FaturasNotifier(this._storage) : super(const AsyncValue.loading()) {
+  FaturasNotifier(this._storage, this._ref) : super(const AsyncValue.loading()) {
     loadFaturas();
   }
 
@@ -33,16 +40,97 @@ class FaturasNotifier extends StateNotifier<AsyncValue<List<Fatura>>> {
 
   Future<void> addFatura(Fatura fatura) async {
     try {
-      final numeroFatura = await _storage.getProximoNumeroFatura();
+      // Obter configuração da empresa
+      final configAsync = _ref.read(configuracoesProvider);
+      final config = configAsync.value;
+      if (config == null) {
+        throw Exception('Configuração da empresa não disponível');
+      }
+
+      // Obter próximo número para a série e ano
+      final ano = DateTime.now().year;
+      final numeroSequencial = await ContadorDocumentosService.obterProximoNumero(
+        fatura.serie,
+        ano,
+      );
+
+      // Gerar número do documento formatado
+      final numeroDocumento = FaturaLegalService.gerarNumeroDocumento(
+        serie: fatura.serie,
+        ano: ano,
+        numeroSequencial: numeroSequencial,
+      );
+
+      // Gerar código ATCUD (simulado)
+      final atcud = FaturaLegalService.gerarATCUDSimulado(
+        fatura.serie,
+        numeroSequencial,
+      );
+
+      // Obter hash do documento anterior (última fatura da mesma série)
+      String? hashAnterior;
+      final faturasAtuais = state.value ?? [];
+      final faturasMessaSerie = faturasAtuais
+          .where((f) => f.serie == fatura.serie)
+          .toList()
+        ..sort((a, b) => b.dataCriacao.compareTo(a.dataCriacao));
+      
+      if (faturasMessaSerie.isNotEmpty) {
+        // Último documento da série tem hash? Usar esse
+        final ultimaFatura = faturasMessaSerie.first;
+        if (ultimaFatura.codigoATCUD != null && ultimaFatura.numero.isNotEmpty) {
+          // Hash = SHA256(NumeroDoc + Data + Total + HashAnterior?)
+          hashAnterior = FaturaLegalService.gerarHashDocumento(
+            numeroDocumento: ultimaFatura.numero,
+            data: ultimaFatura.dataCriacao,
+            total: ultimaFatura.total,
+            hashAnterior: ultimaFatura.hashAnterior,
+          );
+        }
+      }
+
+      // Gerar dados do QR Code
+      final qrCodeData = FaturaLegalService.gerarDadosQRCode(
+        nifEmissor: config.nif,
+        nifAdquirente: fatura.clienteNif,
+        tipoDocumento: fatura.tipoDocumento,
+        data: DateTime.now(),
+        numeroDocumento: numeroDocumento,
+        codigoATCUD: atcud,
+        subtotal: fatura.subtotal,
+        totalIVA: fatura.totalIva,
+        total: fatura.total,
+        pais: 'PT',
+      );
       
       final faturaModel = FaturaModel(
         id: _uuid.v4(),
-        numero: numeroFatura,
+        numero: numeroDocumento,
         data: DateTime.now(),
         clienteId: fatura.clienteId,
         clienteNome: fatura.clienteNome,
+        clienteNif: fatura.clienteNif,
+        clienteMorada: fatura.clienteMorada,
         linhas: fatura.linhas,
         estado: fatura.estado,
+        tipoDocumento: fatura.tipoDocumento,
+        serie: fatura.serie,
+        dataCriacao: DateTime.now(),
+        // Campos gerados automaticamente
+        codigoATCUD: atcud,
+        hashAnterior: hashAnterior,
+        qrCodeData: qrCodeData,
+        // Campos opcionais preservados da fatura original
+        meioPagamento: fatura.meioPagamento,
+        dataPagamento: fatura.dataPagamento,
+        valorPago: fatura.valorPago,
+        retencaoFonte: fatura.retencaoFonte,
+        valorRetencao: fatura.valorRetencao,
+        motivoIsencaoIVA: fatura.motivoIsencaoIVA,
+        observacoes: fatura.observacoes,
+        notasInternas: fatura.notasInternas,
+        documentoOrigem: fatura.documentoOrigem,
+        numeroDocumentoOrigem: fatura.numeroDocumentoOrigem,
       );
       
       await _storage.saveFatura(faturaModel);
