@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../data/models/produto_model.dart';
+import '../../data/models/produto_alteracao_model.dart';
 import '../../domain/entities/produto.dart';
+import '../../domain/entities/produto_alteracao.dart';
 import '../../../clientes/presentation/providers/clientes_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -31,6 +33,9 @@ class ProdutosNotifier extends StateNotifier<AsyncValue<List<Produto>>> {
 
   Future<void> addProduto(Produto produto) async {
     try {
+      final now = DateTime.now();
+      final serieNumero = 'PROD-${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${_uuid.v4().substring(0, 8).toUpperCase()}';
+      
       final produtoModel = ProdutoModel(
         id: _uuid.v4(),
         nome: produto.nome,
@@ -39,6 +44,9 @@ class ProdutosNotifier extends StateNotifier<AsyncValue<List<Produto>>> {
         iva: produto.iva,
         unidade: produto.unidade,
         stock: produto.stock,
+        serieNumero: serieNumero,
+        versao: 1,
+        historicoAlteracoes: [],
       );
       
       await _storage.saveProduto(produtoModel);
@@ -50,7 +58,55 @@ class ProdutosNotifier extends StateNotifier<AsyncValue<List<Produto>>> {
 
   Future<void> updateProduto(Produto produto) async {
     try {
-      final produtoModel = ProdutoModel.fromEntity(produto);
+      final produtoExistente = await _storage.getProduto(produto.id);
+      
+      List<ProdutoAlteracao> novoHistorico = List.from(produto.historicoAlteracoes);
+      int novaVersao = produto.versao;
+      
+      // Se o preço mudou, registar alteração
+      if (produtoExistente != null && produtoExistente.preco != produto.preco) {
+        novaVersao = produto.versao + 1;
+        
+        final alteracao = ProdutoAlteracaoModel(
+          dataCriacao: DateTime.now(),
+          versao: novaVersao,
+          precoAnterior: produtoExistente.preco,
+          precoNovo: produto.preco,
+          descricaoAlteracao: ProdutoAlteracao.formatarDescricao('preco', produtoExistente.preco, produto.preco),
+        );
+        
+        novoHistorico.add(alteracao);
+      }
+      
+      // Se o IVA mudou, registar alteração
+      if (produtoExistente != null && produtoExistente.iva != produto.iva) {
+        novaVersao = produto.versao + 1;
+        
+        final alteracao = ProdutoAlteracaoModel(
+          dataCriacao: DateTime.now(),
+          versao: novaVersao,
+          precoAnterior: produtoExistente.iva,
+          precoNovo: produto.iva,
+          descricaoAlteracao: ProdutoAlteracao.formatarDescricao('iva', produtoExistente.iva, produto.iva),
+        );
+        
+        novoHistorico.add(alteracao);
+      }
+      
+      final produtoModel = ProdutoModel(
+        id: produto.id,
+        nome: produto.nome,
+        descricao: produto.descricao,
+        preco: produto.preco,
+        iva: produto.iva,
+        unidade: produto.unidade,
+        stock: produto.stock,
+        serieNumero: produto.serieNumero,
+        versao: novaVersao,
+        historicoAlteracoes: novoHistorico,
+        dataCriacao: produto.dataCriacao,
+      );
+      
       await _storage.saveProduto(produtoModel);
       await loadProdutos();
     } catch (e) {

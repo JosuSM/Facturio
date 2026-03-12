@@ -48,6 +48,7 @@ Aplicação de faturação para PMEs desenvolvida em Flutter. Oferece operaçõe
 
 ## Desenvolvimento recente
 
+- **Seriação profissional de produtos** — número de série único, versão automática, histórico de alterações, rastreamento de preços.
 - **Exportação SAF-T(PT)** — conformidade fiscal automática com XML v1.04.
 - **Sistema de pagamentos** — múltiplos pagamentos por fatura, histórico, validações.
 - **Página de licença bilíngue** — MIT em português e inglês.
@@ -95,7 +96,17 @@ Pacotes gerados em `dist/<timestamp>/`: `Facturio.apk`, `Facturio.aab`, `Facturi
 
 **Personalização** — Menu lateral ou Configurações → Dados Básicos. Temas, cores, modo claro/escuro, ícones e tamanho de texto. Guia: [PERSONALIZACAO_GUIA.md](PERSONALIZACAO_GUIA.md)
 
-**Gestão de Produtos** — Cadastro com código único, nome, descrição, preço unitário e unidade de medida. Seriação de produtos com versionamento automático, histórico de alterações e rastreamento de custo por período. Stock em tempo real com sincronização entre plataformas. Importação/exportação CSV para atualização em massa e integração com sistemas externos.
+**Gestão de Produtos** — Cadastro profissional com código único, nome, descrição, preço unitário e unidade de medida. 
+
+**Seriação de Produtos:**
+- Número de série único gerado automaticamente por produto (formato: `PROD-YYYYMMDD-XXXXXXXX`)
+- Versão de produto com rastreamento automático de alterações
+- Histórico completo de mudanças: data, versão anterior, preço anterior e novo
+- Rastreamento de IVA com registar de todas as alterações
+- Stock em tempo real com sincronização entre plataformas
+- Importação/exportação CSV para atualização em massa
+
+Acesso através da lista de produtos → Detalhe do produto → "Informações de Serialização" para auditoria, compliance e rastreamento histórico.
 
 **Sistema de ícones no Linux** —
 ```bash
