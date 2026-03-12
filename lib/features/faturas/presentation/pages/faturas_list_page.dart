@@ -98,39 +98,61 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                     ),
                     border: Border.all(color: colors.outlineVariant),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          onChanged: (value) {
-                            setState(() {
-                              _searchTerm = value.trim();
-                            });
-                          },
-                          decoration: InputDecoration(
-                            hintText: _t(context, pt: 'Pesquisar por número ou cliente', en: 'Search by number or customer'),
-                            prefixIcon: const Icon(Icons.search),
-                            suffixIcon: _searchTerm.isEmpty
-                                ? null
-                                : IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _searchTerm = '';
-                                      });
-                                    },
-                                    icon: const Icon(Icons.clear),
-                                  ),
-                            border: const OutlineInputBorder(),
-                            isDense: true,
-                          ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final compact = constraints.maxWidth < 420;
+
+                      final searchField = TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            _searchTerm = value.trim();
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: _t(context, pt: 'Pesquisar por número ou cliente', en: 'Search by number or customer'),
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchTerm.isEmpty
+                              ? null
+                              : IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchTerm = '';
+                                    });
+                                  },
+                                  icon: const Icon(Icons.clear),
+                                ),
+                          border: const OutlineInputBorder(),
+                          isDense: true,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Chip(
+                      );
+
+                      final countChip = Chip(
                         avatar: const Icon(Icons.receipt_long, size: 18),
                         label: Text('${faturasFiltradas.length}/${faturas.length}'),
-                      ),
-                    ],
+                      );
+
+                      if (compact) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            searchField,
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: countChip,
+                            ),
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        children: [
+                          Expanded(child: searchField),
+                          const SizedBox(width: 8),
+                          countChip,
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),

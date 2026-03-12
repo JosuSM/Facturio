@@ -3,6 +3,7 @@ import '../../features/clientes/data/models/cliente_model.dart';
 import '../../features/produtos/data/models/produto_model.dart';
 import '../../features/faturas/data/models/fatura_model.dart';
 import '../../features/pagamentos/data/models/pagamento_model.dart';
+import '../../shared/models/linha_fatura.dart';
 import '../../shared/models/pagamento.dart';
 import '../constants/app_constants.dart';
 import '../models/configuracao_empresa.dart';
@@ -21,6 +22,7 @@ class StorageService {
     // Registrar Adapters
     Hive.registerAdapter(ClienteModelAdapter());
     Hive.registerAdapter(ProdutoModelAdapter());
+    Hive.registerAdapter(LinhaFaturaAdapter());
     Hive.registerAdapter(FaturaModelAdapter());
     Hive.registerAdapter(PagamentoModelAdapter());
 

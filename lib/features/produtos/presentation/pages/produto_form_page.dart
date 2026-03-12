@@ -190,6 +190,7 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                             const SizedBox(height: 16),
                             DropdownButtonFormField<double>(
                               initialValue: _ivaSelec,
+                              isExpanded: true,
                               decoration: InputDecoration(
                                 labelText: _t(context, pt: 'Taxa IVA', en: 'VAT Rate'),
                                 prefixIcon: const Icon(Icons.percent),
@@ -209,6 +210,7 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                             const SizedBox(height: 16),
                             DropdownButtonFormField<String>(
                               initialValue: _unidadeSelecionada,
+                              isExpanded: true,
                               decoration: InputDecoration(
                                 labelText: _t(context, pt: 'Unidade', en: 'Unit'),
                                 prefixIcon: const Icon(Icons.straighten),

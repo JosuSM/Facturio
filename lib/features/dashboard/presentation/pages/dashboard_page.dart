@@ -490,14 +490,6 @@ class DashboardPage extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      IconButton(
-                        tooltip: _t(context, pt: 'Personalizar ícone', en: 'Customize icon'),
-                        onPressed: () => _showDrawerIconPicker(context, ref),
-                        icon: Icon(
-                          Icons.edit,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                      ),
                     ],
                   ),
                 );

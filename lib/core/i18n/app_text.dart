@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/theme_service.dart';
 
 class AppText {
   static bool isEnglish(BuildContext context) {
-    return ThemeService.getAppLanguage() == 'en';
+    return Localizations.localeOf(context).languageCode == 'en';
   }
 
   static String tr(

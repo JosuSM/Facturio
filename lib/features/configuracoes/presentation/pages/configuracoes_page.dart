@@ -242,35 +242,58 @@ class _ConfiguracoesPageState extends ConsumerState<ConfiguracoesPage>
                   const SizedBox(height: 8),
                   Card(
                     color: Colors.blue.shade50,
-                    child: ListTile(
-                      leading: Icon(Icons.help_outline, color: colors.primary),
-                          title: Text(_t(context, pt: 'Tutorial de boas-vindas', en: 'Welcome Tutorial')),
-                      subtitle: Text(
-                        TutorialService.isTutorialCompleted()
-                            ? _t(context, pt: 'Tutorial já visualizado', en: 'Tutorial already viewed')
-                            : _t(context, pt: 'Tutorial não visualizado', en: 'Tutorial not viewed yet'),
-                      ),
-                      trailing: ElevatedButton.icon(
-                        onPressed: () async {
-                          await TutorialService.resetTutorial();
-                          if (context.mounted) {
-                            UiHelpers.mostrarSnackBar(
-                              context,
-                              mensagem: _t(context, pt: 'Tutorial reiniciado. A redirecionar...', en: 'Tutorial reset. Redirecting...'),
-                              tipo: TipoSnackBar.sucesso,
-                            );
-                            await Future.delayed(const Duration(milliseconds: 500));
-                            if (context.mounted) {
-                              Navigator.pushNamed(context, AppRoutes.tutorial);
-                            }
-                          }
-                        },
-                        icon: const Icon(Icons.replay, size: 18),
-                        label: Text(_t(context, pt: 'Ver Tutorial', en: 'Open Tutorial')),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.primary,
-                          foregroundColor: colors.onPrimary,
-                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Icon(Icons.help_outline, color: colors.primary),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_t(context, pt: 'Tutorial de boas-vindas', en: 'Welcome Tutorial')),
+                                const SizedBox(height: 4),
+                                Text(
+                                  TutorialService.isTutorialCompleted()
+                                      ? _t(context, pt: 'Tutorial já visualizado', en: 'Tutorial already viewed')
+                                      : _t(context, pt: 'Tutorial não visualizado', en: 'Tutorial not viewed yet'),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                const SizedBox(height: 10),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      await TutorialService.resetTutorial();
+                                      if (context.mounted) {
+                                        UiHelpers.mostrarSnackBar(
+                                          context,
+                                          mensagem: _t(context, pt: 'Tutorial reiniciado. A redirecionar...', en: 'Tutorial reset. Redirecting...'),
+                                          tipo: TipoSnackBar.sucesso,
+                                        );
+                                        await Future.delayed(const Duration(milliseconds: 500));
+                                        if (context.mounted) {
+                                          Navigator.pushNamed(context, AppRoutes.tutorial);
+                                        }
+                                      }
+                                    },
+                                    icon: const Icon(Icons.replay, size: 18),
+                                    label: Text(_t(context, pt: 'Ver Tutorial', en: 'Open Tutorial')),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: colors.primary,
+                                      foregroundColor: colors.onPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -282,20 +305,45 @@ class _ConfiguracoesPageState extends ConsumerState<ConfiguracoesPage>
                   const SizedBox(height: 8),
                   Card(
                     color: Colors.purple.shade50,
-                    child: ListTile(
-                      leading: Icon(Icons.palette, color: colors.primary),
-                      title: Text(_t(context, pt: 'Tema e Aparência', en: 'Theme and Appearance')),
-                      subtitle: Text(_t(context, pt: 'Personalize cores, ícones e muito mais', en: 'Customize colors, icons, and more')),
-                      trailing: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pushNamed(context, AppRoutes.personalizacao);
-                        },
-                        icon: const Icon(Icons.tune, size: 18),
-                        label: Text(_t(context, pt: 'Personalizar', en: 'Customize')),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple.shade600,
-                          foregroundColor: Colors.white,
-                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Icon(Icons.palette, color: colors.primary),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(_t(context, pt: 'Tema e Aparência', en: 'Theme and Appearance')),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _t(context, pt: 'Personalize cores, ícones e muito mais', en: 'Customize colors, icons, and more'),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                const SizedBox(height: 10),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, AppRoutes.personalizacao);
+                                    },
+                                    icon: const Icon(Icons.tune, size: 18),
+                                    label: Text(_t(context, pt: 'Personalizar', en: 'Customize')),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.purple.shade600,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

@@ -284,18 +284,51 @@ class FaturaDetailPage extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final compact = constraints.maxWidth < 360;
+
+                                final title = Text(
                                   _t(context, pt: 'Histórico de Pagamentos', en: 'Payment History'),
                                   style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                                Chip(
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                );
+
+                                final counterChip = Chip(
                                   label: Text('${pagamentos.length}'),
                                   avatar: const Icon(Icons.payments, size: 18),
-                                ),
-                              ],
+                                  visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                );
+
+                                if (compact) {
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      title,
+                                      const SizedBox(height: 8),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: counterChip,
+                                      ),
+                                    ],
+                                  );
+                                }
+
+                                return Row(
+                                  children: [
+                                    Expanded(child: title),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: counterChip,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                             const Divider(),
                             if (pagamentos.isEmpty)
@@ -458,16 +491,22 @@ class FaturaDetailPage extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-              fontSize: bold ? 16 : 14,
-              color: color,
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+                fontSize: bold ? 16 : 14,
+                color: color,
+              ),
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             valor,
+            textAlign: TextAlign.end,
             style: TextStyle(
               fontWeight: bold ? FontWeight.bold : FontWeight.normal,
               fontSize: bold ? 18 : 14,
