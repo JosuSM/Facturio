@@ -8,7 +8,7 @@ cd "$PROJECT_DIR"
 LATEST_DIST=$(ls -td dist/*/ | head -1)
 LINUX_BUILD_DIR="${LATEST_DIST}linux"
 DEB_DIR="/tmp/facturio-deb"
-VERSION="1.0.0"
+VERSION=$(grep '^version:' "$PROJECT_DIR/pubspec.yaml" | awk '{print $2}' | cut -d'+' -f1)
 
 log() {
   printf "\n[%s] %s\n" "$(date +%H:%M:%S)" "$1"
@@ -153,12 +153,14 @@ EOF
 
 log "A criar changelog..."
 cat > "$DEB_DIR/usr/share/doc/facturio/changelog" <<'EOF'
-facturio (1.0.0) unstable; urgency=medium
+facturio (__VERSION__) unstable; urgency=medium
 
   * Initial release
 
  -- IEFP <dev@iefp.pt>  $(date -R)
 EOF
+
+sed -i "s/__VERSION__/${VERSION}/" "$DEB_DIR/usr/share/doc/facturio/changelog"
 
 log "A construir pacote Debian..."
 OUTPUT_DIR="$(cd "${LATEST_DIST%/}" && pwd)"

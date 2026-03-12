@@ -140,6 +140,8 @@ class AppIcon {
 
 /// Ícones predefinidos da aplicação.
 class PredefinedIcons {
+  static const int defaultIconIndex = 0;
+
   static const List<AppIcon> icons = [
     AppIcon(
       key: 'official',
@@ -196,6 +198,6 @@ class PredefinedIcons {
     if (index >= 0 && index < icons.length) {
       return icons[index];
     }
-    return icons[0]; // Padrão
+    return icons[defaultIconIndex]; // Padrão (Oficial Facturio)
   }
 }

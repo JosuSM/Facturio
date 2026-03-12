@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
 import '../../../../core/i18n/app_text.dart';
+import '../../../../core/models/app_theme.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/admin_auth_service.dart';
 import '../../../../core/services/backup_service.dart';
@@ -341,11 +343,12 @@ class DashboardPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Icon(icon, color: color, size: 32),
-                  if (onTap != null)
-                    Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                  if (onTap != null) ...[
+                    const Spacer(),
+                    const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                  ],
                 ],
               ),
               const SizedBox(height: 8),
@@ -437,6 +440,8 @@ class DashboardPage extends ConsumerWidget {
   }
 
   Widget _buildDrawer(BuildContext context, WidgetRef ref) {
+    final selectedIcon = ref.watch(themeProvider).currentIcon;
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -445,25 +450,58 @@ class DashboardPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(
-                  Icons.receipt_long,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Facturio',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final iconBoxSize = (constraints.maxHeight * 0.52).clamp(50.0, 74.0).toDouble();
+                final fallbackIconSize = (iconBoxSize * 0.86).clamp(42.0, 64.0).toDouble();
+                final iconTextGap = (iconBoxSize * 0.2).clamp(10.0, 16.0).toDouble();
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: iconBoxSize,
+                        height: iconBoxSize,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => _showDrawerIconPicker(context, ref),
+                          child: selectedIcon.assetPath != null
+                              ? SvgPicture.asset(
+                                  selectedIcon.assetPath!,
+                                  fit: BoxFit.contain,
+                                )
+                              : Icon(
+                                  selectedIcon.icon ?? Icons.receipt_long,
+                                  size: fallbackIconSize,
+                                  color: selectedIcon.color,
+                                ),
+                        ),
+                      ),
+                      SizedBox(width: iconTextGap),
+                      Expanded(
+                        child: Text(
+                          'Facturio',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: _t(context, pt: 'Personalizar ícone', en: 'Customize icon'),
+                        onPressed: () => _showDrawerIconPicker(context, ref),
+                        icon: Icon(
+                          Icons.edit,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
           ListTile(
@@ -715,6 +753,72 @@ class DashboardPage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showDrawerIconPicker(BuildContext context, WidgetRef ref) async {
+    final currentIndex = ref.read(themeProvider).appIconIndex;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                title: Text(
+                  _t(context, pt: 'Escolher ícone do menu', en: 'Choose drawer icon'),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                subtitle: Text(
+                  _t(
+                    context,
+                    pt: 'Este ícone também é usado na personalização da app.',
+                    en: 'This icon is also used in app personalization.',
+                  ),
+                ),
+              ),
+              ...PredefinedIcons.icons.asMap().entries.map((entry) {
+                final index = entry.key;
+                final appIcon = entry.value;
+
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: appIcon.color.withValues(alpha: 0.12),
+                    child: appIcon.assetPath != null
+                        ? SvgPicture.asset(
+                            appIcon.assetPath!,
+                            width: 22,
+                            height: 22,
+                            fit: BoxFit.contain,
+                          )
+                        : Icon(
+                            appIcon.icon ?? Icons.receipt_long,
+                            color: appIcon.color,
+                            size: 22,
+                          ),
+                  ),
+                  title: Text(appIcon.name),
+                  subtitle: Text(appIcon.description),
+                  trailing: index == currentIndex
+                      ? const Icon(Icons.check_circle, color: Colors.green)
+                      : null,
+                  onTap: () async {
+                    await ref.read(themeProvider).setAppIcon(index);
+                    if (sheetContext.mounted) {
+                      Navigator.of(sheetContext).pop();
+                    }
+                  },
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 

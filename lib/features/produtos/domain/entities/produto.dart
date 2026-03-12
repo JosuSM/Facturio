@@ -21,7 +21,7 @@ class Produto {
     required this.iva,
     required this.unidade,
     required this.stock,
-    required this.serieNumero,
+    this.serieNumero = '',
     this.versao = 1,
     this.historicoAlteracoes = const [],
     DateTime? dataCriacao,

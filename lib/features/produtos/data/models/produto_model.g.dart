@@ -24,13 +24,17 @@ class ProdutoModelAdapter extends TypeAdapter<ProdutoModel> {
       iva: fields[4] as double,
       unidade: fields[5] as String,
       stock: fields[6] as int,
+      serieNumero: fields[7] as String,
+      versao: fields[8] as int,
+      historicoAlteracoes: (fields[9] as List).cast<ProdutoAlteracao>(),
+      dataCriacao: fields[10] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ProdutoModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +48,15 @@ class ProdutoModelAdapter extends TypeAdapter<ProdutoModel> {
       ..writeByte(5)
       ..write(obj.unidade)
       ..writeByte(6)
-      ..write(obj.stock);
+      ..write(obj.stock)
+      ..writeByte(7)
+      ..write(obj.serieNumero)
+      ..writeByte(8)
+      ..write(obj.versao)
+      ..writeByte(9)
+      ..write(obj.historicoAlteracoes)
+      ..writeByte(10)
+      ..write(obj.dataCriacao);
   }
 
   @override

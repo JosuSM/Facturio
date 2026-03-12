@@ -12,7 +12,7 @@ class ThemeNotifier extends ChangeNotifier {
   bool _usePredefinedTheme = true;
   Color? _customPrimaryColor;
   Color? _customAccentColor;
-  int _appIconIndex = 0;
+  int _appIconIndex = PredefinedIcons.defaultIconIndex;
   bool _useMaterialYou = false;
   double _fontSize = 1.0;
   String _appLanguage = 'pt';

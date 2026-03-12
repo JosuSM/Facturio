@@ -51,6 +51,7 @@ class ProdutoModel extends Produto {
   @override
   final DateTime dataCriacao;
 
+  // ignore: use_super_parameters
   ProdutoModel({
     required this.id,
     required this.nome,
@@ -59,7 +60,7 @@ class ProdutoModel extends Produto {
     required this.iva,
     required this.unidade,
     required this.stock,
-    required this.serieNumero,
+    this.serieNumero = '',
     this.versao = 1,
     this.historicoAlteracoes = const [],
     DateTime? dataCriacao,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../models/app_theme.dart';
 
 /// Serviço para gerenciar preferências de tema e personalização da app.
 class ThemeService {
@@ -85,7 +86,7 @@ class ThemeService {
 
   /// Obtém o índice do ícone selecionado.
   static int getAppIconIndex() {
-    return _box.get(_appIcon, defaultValue: 0);
+    return _box.get(_appIcon, defaultValue: PredefinedIcons.defaultIconIndex);
   }
 
   /// Define o índice do ícone da app.

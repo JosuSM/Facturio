@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/i18n/app_text.dart';
-import '../../domain/entities/produto.dart';
 import '../providers/produtos_provider.dart';
 import '../widgets/serialization_info_widget.dart';
 
@@ -11,9 +10,9 @@ class ProdutoDetailPage extends ConsumerWidget {
   final String produtoId;
 
   const ProdutoDetailPage({
-    Key? key,
+    super.key,
     required this.produtoId,
-  }) : super(key: key);
+  });
 
   String _t(BuildContext context, {required String pt, required String en}) {
     return AppText.tr(context, pt: pt, en: en);
