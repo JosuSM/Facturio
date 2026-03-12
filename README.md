@@ -95,6 +95,8 @@ Pacotes gerados em `dist/<timestamp>/`: `Facturio.apk`, `Facturio.aab`, `Facturi
 
 **Personalização** — Menu lateral ou Configurações → Dados Básicos. Temas, cores, modo claro/escuro, ícones e tamanho de texto. Guia: [PERSONALIZACAO_GUIA.md](PERSONALIZACAO_GUIA.md)
 
+**Gestão de Produtos** — Cadastro com código único, nome, descrição, preço unitário e unidade de medida. Seriação de produtos com versionamento automático, histórico de alterações e rastreamento de custo por período. Stock em tempo real com sincronização entre plataformas. Importação/exportação CSV para atualização em massa e integração com sistemas externos.
+
 **Sistema de ícones no Linux** —
 ```bash
 bash install_icon.sh
