@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # UI & Icons
   cupertino_icons: ^1.0.8
@@ -60,9 +62,6 @@ dependencies:
   
   # File System
   path_provider: ^2.1.0
-  
-  # Forms & Validation
-  flutter_form_builder: ^9.3.0
   
   # Color Picker
   flutter_colorpicker: ^1.1.0

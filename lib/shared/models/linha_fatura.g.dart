@@ -8,7 +8,7 @@ part of 'linha_fatura.dart';
 
 class LinhaFaturaAdapter extends TypeAdapter<LinhaFatura> {
   @override
-  final int typeId = 3;
+  final int typeId = 4;
 
   @override
   LinhaFatura read(BinaryReader reader) {

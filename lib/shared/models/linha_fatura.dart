@@ -3,7 +3,7 @@ import '../../features/produtos/domain/entities/produto.dart';
 
 part 'linha_fatura.g.dart';
 
-@HiveType(typeId: 3)
+@HiveType(typeId: 4)
 class LinhaFatura {
   @HiveField(0)
   final String produtoId;

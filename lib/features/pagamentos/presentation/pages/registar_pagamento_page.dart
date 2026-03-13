@@ -123,7 +123,14 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(_t(context, pt: 'Total da Fatura:', en: 'Invoice Total:')),
+                          Expanded(
+                            child: Text(
+                              _t(context, pt: 'Total da Fatura:', en: 'Invoice Total:'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Text(
                             '€${totalFatura.toStringAsFixed(2)}',
                             style: const TextStyle(
@@ -138,10 +145,15 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Já Pago (${widget.pagamentosExistentes.length} ${widget.pagamentosExistentes.length == 1 ? "pagamento" : "pagamentos"}):',
-                              style: const TextStyle(color: Colors.green),
+                            Expanded(
+                              child: Text(
+                                'Já Pago (${widget.pagamentosExistentes.length} ${widget.pagamentosExistentes.length == 1 ? "pagamento" : "pagamentos"}):',
+                                style: const TextStyle(color: Colors.green),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             Text(
                               '€${totalPago.toStringAsFixed(2)}',
                               style: const TextStyle(
@@ -156,13 +168,18 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            _t(context, pt: 'Valor em Dívida:', en: 'Outstanding Amount:'),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                          Expanded(
+                            child: Text(
+                              _t(context, pt: 'Valor em Dívida:', en: 'Outstanding Amount:'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             '€${_valorEmDivida.toStringAsFixed(2)}',
                             style: TextStyle(
@@ -223,6 +240,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       // Meio de Pagamento
                       DropdownButtonFormField<String>(
                         initialValue: _meioPagamentoSelecionado,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: _t(context, pt: 'Meio de Pagamento *', en: 'Payment Method *'),
                           prefixIcon: const Icon(Icons.payment),
@@ -304,28 +322,55 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
               ),
               const SizedBox(height: 24),
 
-              // Botões de ação
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => context.pop(),
-                      child: Text(_t(context, pt: 'Cancelar', en: 'Cancel')),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton.icon(
-                      onPressed: _registarPagamento,
-                      icon: const Icon(Icons.check),
-                      label: Text(_t(context, pt: 'Registar Pagamento', en: 'Record Payment')),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+              // Botões de ação com layout responsivo para evitar overflow
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isCompact = constraints.maxWidth < 430;
+
+                  if (isCompact) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => context.pop(),
+                          child: Text(_t(context, pt: 'Cancelar', en: 'Cancel')),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: _registarPagamento,
+                          icon: const Icon(Icons.check),
+                          label: Text(_t(context, pt: 'Registar Pagamento', en: 'Record Payment')),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => context.pop(),
+                          child: Text(_t(context, pt: 'Cancelar', en: 'Cancel')),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: _registarPagamento,
+                          icon: const Icon(Icons.check),
+                          label: Text(_t(context, pt: 'Registar Pagamento', en: 'Record Payment')),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
           ),

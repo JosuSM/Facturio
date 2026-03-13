@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/routes.dart';
 import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/tutorial_service.dart';
 import '../../data/tutorial_slides.dart';
 
@@ -83,18 +86,47 @@ class _TutorialPageState extends State<TutorialPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Logo ou título
-                  Row(
-                    children: [
-                      Icon(Icons.receipt_long, color: colors.primary, size: 32),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Facturio',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colors.primary,
+                  Expanded(
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final selectedIcon = ref.watch(themeProvider).currentIcon;
+                        const iconBoxSize = 74.0;
+                        const fallbackIconSize = 64.0;
+                        const iconTextGap = 14.0;
+
+                        return Row(
+                          children: [
+                            SizedBox(
+                              width: iconBoxSize,
+                              height: iconBoxSize,
+                              child: selectedIcon.assetPath != null
+                                  ? SvgPicture.asset(
+                                      selectedIcon.assetPath!,
+                                      fit: BoxFit.contain,
+                                    )
+                                  : Icon(
+                                      selectedIcon.icon ?? Icons.receipt_long,
+                                      color: selectedIcon.color,
+                                      size: fallbackIconSize,
+                                    ),
                             ),
-                      ),
-                    ],
+                            const SizedBox(width: iconTextGap),
+                            Expanded(
+                              child: Text(
+                                'Facturio',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      color: colors.primary,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                   // Botão de pular
                   if (!isLastPage)
@@ -134,27 +166,23 @@ class _TutorialPageState extends State<TutorialPage> {
             // Botões de navegação
             Padding(
               padding: const EdgeInsets.all(24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Botão Voltar
-                  if (_currentPage > 0)
-                    OutlinedButton.icon(
-                      onPressed: _previousPage,
-                      icon: const Icon(Icons.arrow_back),
-                      label: Text(t(pt: 'Voltar', en: 'Back')),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                      ),
-                    )
-                  else
-                    const SizedBox(width: 120),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxWidth < 360;
 
-                  // Botão Próximo/Começar
-                  ElevatedButton.icon(
+                  final backButton = OutlinedButton.icon(
+                    onPressed: _currentPage > 0 ? _previousPage : null,
+                    icon: const Icon(Icons.arrow_back),
+                    label: Text(t(pt: 'Voltar', en: 'Back')),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                    ),
+                  );
+
+                  final nextButton = ElevatedButton.icon(
                     onPressed: _nextPage,
                     icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward),
                     label: Text(isLastPage ? t(pt: 'Começar', en: 'Start') : t(pt: 'Próximo', en: 'Next')),
@@ -166,8 +194,27 @@ class _TutorialPageState extends State<TutorialPage> {
                       backgroundColor: colors.primary,
                       foregroundColor: colors.onPrimary,
                     ),
-                  ),
-                ],
+                  );
+
+                  if (compact) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        backButton,
+                        const SizedBox(height: 12),
+                        nextButton,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (_currentPage > 0) backButton else const SizedBox(width: 120),
+                      nextButton,
+                    ],
+                  );
+                },
               ),
             ),
           ],

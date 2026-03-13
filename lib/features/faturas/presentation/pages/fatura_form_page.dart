@@ -116,6 +116,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                       data: (clientes) {
                         return DropdownButtonFormField<String>(
                           initialValue: _clienteSelecionadoId,
+                          isExpanded: true,
                           decoration: InputDecoration(
                             labelText: _t(context, pt: 'Cliente *', en: 'Customer *'),
                             prefixIcon: const Icon(Icons.person),
@@ -142,6 +143,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: _estadoSelecionado,
+                      isExpanded: true,
                       decoration: InputDecoration(
                         labelText: _t(context, pt: 'Estado', en: 'Status'),
                         prefixIcon: const Icon(Icons.info),
@@ -177,6 +179,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     if (config != null)
                       DropdownButtonFormField<String>(
                         initialValue: _tipoDocumentoSelecionado,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: _t(context, pt: 'Tipo de Documento *', en: 'Document Type *'),
                           prefixIcon: const Icon(Icons.description),
@@ -217,6 +220,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     if (config != null)
                       DropdownButtonFormField<String>(
                         initialValue: _meioPagamentoSelecionado,
+                        isExpanded: true,
                         decoration: InputDecoration(
                           labelText: _t(context, pt: 'Meio de Pagamento', en: 'Payment Method'),
                           prefixIcon: const Icon(Icons.payment),
@@ -264,12 +268,22 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: _motivoIsencaoIVASelecionado,
+                      isExpanded: true,
                       decoration: InputDecoration(
                         labelText: _t(context, pt: 'Motivo de Isenção de IVA', en: 'VAT Exemption Reason'),
                         prefixIcon: const Icon(Icons.discount),
                         helperText: _t(context, pt: 'Apenas se aplicável', en: 'Only if applicable'),
                       ),
                       hint: Text(_t(context, pt: 'Nenhum', en: 'None')),
+                      selectedItemBuilder: (context) {
+                        return AppConstants.motivosIsencaoIVA.map((motivo) {
+                          return Text(
+                            motivo,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        }).toList();
+                      },
                       items: AppConstants.motivosIsencaoIVA.map((motivo) {
                         return DropdownMenuItem(
                           value: motivo,
@@ -369,11 +383,16 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField(
+              isExpanded: true,
               hint: Text(_t(context, pt: 'Selecione um produto', en: 'Select a product')),
               items: produtos.map((produto) {
                 return DropdownMenuItem(
                   value: produto.id,
-                  child: Text('${produto.nome} - €${produto.preco}'),
+                  child: Text(
+                    '${produto.nome} - €${produto.preco}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 );
               }).toList(),
               onChanged: (value) {
