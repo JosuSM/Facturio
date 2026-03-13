@@ -120,22 +120,51 @@ class BackupService {
       await pasta.create(recursive: true);
     }
 
+    if (Platform.isAndroid || Platform.isIOS) {
+      try {
+        final selecionado = await FilePicker.platform.getDirectoryPath(
+          initialDirectory: pasta.path,
+        );
+        return selecionado != null;
+      } catch (_) {
+        return false;
+      }
+    }
+
     if (Platform.isLinux) {
-      final result = await Process.run('xdg-open', [pasta.path]);
-      return result.exitCode == 0;
+      if (await _abrirDiretorioPorComando('xdg-open', [pasta.path])) {
+        return true;
+      }
+      if (await _abrirDiretorioPorComando('gio', ['open', pasta.path])) {
+        return true;
+      }
+      if (await _abrirDiretorioPorComando('nautilus', [pasta.path])) {
+        return true;
+      }
+      return false;
     }
 
     if (Platform.isWindows) {
-      final result = await Process.run('explorer', [pasta.path]);
-      return result.exitCode == 0;
+      return _abrirDiretorioPorComando('explorer', [pasta.path]);
     }
 
     if (Platform.isMacOS) {
-      final result = await Process.run('open', [pasta.path]);
-      return result.exitCode == 0;
+      return _abrirDiretorioPorComando('open', [pasta.path]);
     }
 
     return false;
+  }
+
+  static Future<bool> _abrirDiretorioPorComando(
+    String comando,
+    List<String> argumentos,
+  ) async {
+    try {
+      final result = await Process.run(comando, argumentos);
+      return result.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
   }
 
 

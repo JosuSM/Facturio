@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -12,13 +13,68 @@ import '../models/configuracao_empresa.dart';
 import 'package:intl/intl.dart';
 
 class PdfService {
-  static final formatoMoeda = NumberFormat.currency(
+  static final _formatoMoeda = NumberFormat.currency(
     locale: 'pt_PT',
-    symbol: '€',
+    symbol: '',
     decimalDigits: 2,
   );
+  static pw.Font? _fonteBase;
+  static pw.Font? _fonteBold;
+  static bool _fontesCarregadas = false;
+  static bool _usarMoedaAscii = false;
 
   static final formatoData = DateFormat('dd/MM/yyyy');
+
+  static String _formatarMoeda(num valor) {
+    final numero = _formatoMoeda.format(valor).trim();
+    return _usarMoedaAscii ? '$numero EUR' : '$numero €';
+  }
+
+  static void _garantirBinding() {
+    WidgetsFlutterBinding.ensureInitialized();
+  }
+
+  static Future<void> _carregarFontesPdf() async {
+    if (_fontesCarregadas) {
+      return;
+    }
+
+    _fontesCarregadas = true;
+    try {
+      _fonteBase = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/static/Fustat-Regular.ttf'),
+      );
+      _fonteBold = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/static/Fustat-Bold.ttf'),
+      );
+      _usarMoedaAscii = false;
+    } catch (_) {
+      // Fallback silencioso para fontes padrão do pacote PDF.
+      _fonteBase = null;
+      _fonteBold = null;
+      _usarMoedaAscii = true;
+    }
+  }
+
+  static Future<Uint8List?> _carregarLogoParaPdf() async {
+    _garantirBinding();
+
+    const candidatos = [
+      'assets/images/logo.png',
+      'assets/icons/icon-256.png',
+      'assets/icons/icon-192.png',
+    ];
+
+    for (final caminho in candidatos) {
+      try {
+        final data = await rootBundle.load(caminho);
+        return data.buffer.asUint8List();
+      } catch (_) {
+        // Tentar o próximo ficheiro do logo.
+      }
+    }
+    return null;
+  }
 
   // Gerar PDF da fatura
   static Future<pw.Document> gerarFaturaPdf(
@@ -26,17 +82,26 @@ class PdfService {
     Cliente cliente,
     ConfiguracaoEmpresa config,
   ) async {
+    _garantirBinding();
+    await _carregarFontesPdf();
+
     final pdf = pw.Document();
+    final logoBytes = await _carregarLogoParaPdf();
+    final logoImage = logoBytes != null ? pw.MemoryImage(logoBytes) : null;
+    final tema = (_fonteBase != null && _fonteBold != null)
+        ? pw.ThemeData.withFont(base: _fonteBase!, bold: _fonteBold!)
+        : null;
 
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
+        theme: tema,
         build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               // Cabeçalho
-              _buildCabecalho(fatura, config),
+              _buildCabecalho(fatura, config, logoImage: logoImage),
               pw.SizedBox(height: 20),
 
               // Dados do Cliente
@@ -71,7 +136,11 @@ class PdfService {
     return pdf;
   }
 
-  static pw.Widget _buildCabecalho(Fatura fatura, ConfiguracaoEmpresa config) {
+  static pw.Widget _buildCabecalho(
+    Fatura fatura,
+    ConfiguracaoEmpresa config, {
+    pw.MemoryImage? logoImage,
+  }) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -107,6 +176,13 @@ class PdfService {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
+              if (logoImage != null)
+                pw.Container(
+                  width: 80,
+                  height: 40,
+                  margin: const pw.EdgeInsets.only(bottom: 6),
+                  child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                ),
               pw.Text(
                 config.nomeEmpresa,
                 style: pw.TextStyle(
@@ -190,9 +266,9 @@ class PdfService {
             children: [
               _buildCelula(linha.produtoNome),
               _buildCelula(linha.quantidade.toString(), alinhamento: pw.Alignment.centerRight),
-              _buildCelula(formatoMoeda.format(linha.precoUnitario), alinhamento: pw.Alignment.centerRight),
+              _buildCelula(_formatarMoeda(linha.precoUnitario), alinhamento: pw.Alignment.centerRight),
               _buildCelula('${linha.iva}%', alinhamento: pw.Alignment.center),
-              _buildCelula(formatoMoeda.format(linha.total), alinhamento: pw.Alignment.centerRight),
+              _buildCelula(_formatarMoeda(linha.total), alinhamento: pw.Alignment.centerRight),
             ],
           );
         }),
@@ -227,8 +303,8 @@ class PdfService {
         width: 250,
         child: pw.Column(
           children: [
-            _buildLinhaTotal('Subtotal:', formatoMoeda.format(fatura.subtotal)),
-            _buildLinhaTotal('IVA:', formatoMoeda.format(fatura.totalIva)),
+            _buildLinhaTotal('Subtotal:', _formatarMoeda(fatura.subtotal)),
+            _buildLinhaTotal('IVA:', _formatarMoeda(fatura.totalIva)),
             // Motivo de isenção de IVA (se aplicável)
             if (fatura.motivoIsencaoIVA != null && fatura.motivoIsencaoIVA!.isNotEmpty)
               pw.Padding(
@@ -242,7 +318,7 @@ class PdfService {
             pw.Divider(),
             _buildLinhaTotal(
               'TOTAL:',
-              formatoMoeda.format(fatura.total),
+              _formatarMoeda(fatura.total),
               negrito: true,
               tamanho: 16,
             ),
@@ -250,14 +326,14 @@ class PdfService {
             if (fatura.valorRetencao != null && fatura.valorRetencao! > 0) ...[
               pw.SizedBox(height: 4),
               _buildLinhaTotal(
-                'Retenção na Fonte (${fatura.retencaoFonte?.toStringAsFixed(1)}%):',
-                '- ${formatoMoeda.format(fatura.valorRetencao)}',
+                'Retenção na Fonte (${(fatura.retencaoFonte ?? 0).toStringAsFixed(1)}%):',
+                '- ${_formatarMoeda(fatura.valorRetencao!)}',
                 tamanho: 10,
               ),
               pw.Divider(color: PdfColors.grey400),
               _buildLinhaTotal(
                 'Total a receber:',
-                formatoMoeda.format(fatura.totalComRetencao),
+                _formatarMoeda(fatura.totalComRetencao),
                 negrito: true,
                 tamanho: 14,
               ),
@@ -329,7 +405,7 @@ class PdfService {
                   ),
                 if (fatura.valorPago != null)
                   pw.Text(
-                    'Valor: ${formatoMoeda.format(fatura.valorPago)}',
+                    'Valor: ${_formatarMoeda(fatura.valorPago!)}',
                     style: const pw.TextStyle(fontSize: 8),
                   ),
               ],
@@ -357,7 +433,7 @@ class PdfService {
                 children: [
                   if (fatura.hashAnterior != null)
                     pw.Text(
-                      'Hash: ${fatura.hashAnterior!.substring(0, 20)}...',
+                      'Hash: ${_resumirHash(fatura.hashAnterior!)}',
                       style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700),
                     ),
                   if (config.numeroChaveCertificacaoAT != null)
@@ -531,5 +607,12 @@ class PdfService {
   static String _csv(String value) {
     final escaped = value.replaceAll('"', '""');
     return '"$escaped"';
+  }
+
+  static String _resumirHash(String hash, {int limite = 20}) {
+    if (hash.length <= limite) {
+      return hash;
+    }
+    return '${hash.substring(0, limite)}...';
   }
 }

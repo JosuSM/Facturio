@@ -662,12 +662,22 @@ class DashboardPage extends ConsumerWidget {
                   );
               final abriu = await BackupService.abrirPastaBackups(cfg?.diretorioBackup);
               if (context.mounted) {
+                final plataforma = Theme.of(context).platform;
+                final emMobile = plataforma == TargetPlatform.android ||
+                    plataforma == TargetPlatform.iOS;
+
                 UiHelpers.mostrarSnackBar(
                   context,
                   mensagem: abriu
                       ? _t(context, pt: 'Pasta de backups aberta.', en: 'Backup folder opened.')
-                      : _t(context, pt: 'Não foi possível abrir a pasta de backups.', en: 'Could not open backup folder.'),
-                  tipo: abriu ? TipoSnackBar.sucesso : TipoSnackBar.erro,
+                      : emMobile
+                          ? _t(context, pt: 'Seleção de pasta cancelada.', en: 'Folder selection canceled.')
+                          : _t(context, pt: 'Não foi possível abrir a pasta de backups.', en: 'Could not open backup folder.'),
+                  tipo: abriu
+                      ? TipoSnackBar.sucesso
+                      : emMobile
+                          ? TipoSnackBar.info
+                          : TipoSnackBar.erro,
                 );
               }
             },
